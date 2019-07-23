@@ -1,0 +1,69 @@
+{
+  "name": "randomizr",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vue-cli-service electron:serve",
+    "build": "vue-cli-service electron:build",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.15",
+    "@fortawesome/free-solid-svg-icons": "^5.7.2",
+    "@fortawesome/vue-fontawesome": "^0.1.5",
+    "@types/fs-extra": "^8.0.0",
+    "@types/jquery": "^3.3.30",
+    "core-js": "^2.6.5",
+    "fs-extra": "^8.1.0",
+    "jquery": "^3.4.1",
+    "node-sass": "^4.12.0",
+    "pouchdb": "^7.1.1",
+    "sass-loader": "^7.1.0",
+    "uuid": "^3.3.2",
+    "vue": "^2.6.10",
+    "vue-class-component": "^7.0.2",
+    "vue-property-decorator": "^8.1.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.7.0",
+    "@vue/cli-plugin-eslint": "^3.7.0",
+    "@vue/cli-plugin-typescript": "^3.7.0",
+    "@vue/cli-service": "^3.7.0",
+    "@vue/eslint-config-typescript": "^4.0.0",
+    "babel-eslint": "^10.0.1",
+    "electron": "^5.0.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "typescript": "^3.4.3",
+    "vue-cli-plugin-electron-builder": "^1.3.2",
+    "vue-cli-plugin-fontawesome": "^0.2.0",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended",
+      "@vue/typescript"
+    ],
+    "rules": {
+      "no-console": false
+    },
+    "parserOptions": {
+      "parser": "@typescript-eslint/parser"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "main": "background.js"
+}
