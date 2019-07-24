@@ -1,57 +1,59 @@
 <template>
   <div :style="style" ref="imgView" class="image-view">
-    <img v-if="isImg" :src="src" ref="img" />
-    
-    <video v-else-if="isVideo" ref="video">
-      <source :src="src">
-    </video>
+    <div class="image-view-inner">
+      <img v-if="isImg" :src="src" ref="img" />
+      
+      <video v-else-if="isVideo" ref="video">
+        <source :src="src">
+      </video>
 
-    <div v-if="isVideo" class="video-progress">
-      <div class="video-progress-complete" :style="`width: ${percentComplete}%`"></div>
-    </div>
+      <div v-if="isVideo" class="video-progress">
+        <div class="video-progress-complete" :style="`width: ${percentComplete}%`"></div>
+      </div>
 
-    <div ref="imgControls" :style="imageControlsStyle" class="image-controls-wrap">
-      <div class="image-controls">
-        <div :class="`image-controls-inner ${isNarrow ? 'narrow': ''}`">
-          <button @click="$emit('previous')" class="previous">
-            <FontAwesome icon="arrow-left" />
+      <div ref="imgControls" :style="imageControlsStyle" class="image-controls-wrap">
+        <div class="image-controls">
+          <div :class="`image-controls-inner ${isNarrow ? 'narrow': ''}`">
+            <button @click="$emit('previous')" class="previous">
+              <FontAwesome icon="arrow-left" />
+            </button>
+
+            <button @click="deleteFile"
+                    :title="`Delete file ${src}`"
+                    class="btn-danger">
+              <FontAwesome icon="trash" />
+            </button>
+
+            <button @click="showInFolder"
+                    title="Show file in folder">
+              <FontAwesome icon="folder" />
+            </button>
+
+            <input v-model="filename" @focus="$event.target.select()" class="input-dark" type="text" readonly>
+
+            <!-- <button @click="alignTop"
+                    title="Align image to the top of the screen (SHIFT + ↑)">
+              <FontAwesome icon="long-arrow-alt-up" />
+            </button>
+
+            <button @click="alignBottom"
+                    title="Align image to the bottom of the screen (SHIFT + ↓)">
+              <FontAwesome icon="long-arrow-alt-down" />
+            </button> -->
+
+            <button @click="rotateLeft"
+                    title="Rotate image to the left">
+              <FontAwesome icon="undo" />
+            </button>
+            
+            <button @click="rotateRight"
+                    title="Rotate image to the right">
+              <FontAwesome icon="undo" style="transform: scaleX(-1);" />
+            </button>
+
+            <button @click="$emit('next')" class="next"><FontAwesome icon="arrow-right" />
           </button>
-
-          <button @click="deleteFile"
-                  :title="`Delete file ${src}`"
-                  class="btn-danger">
-            <FontAwesome icon="trash" />
-          </button>
-
-          <button @click="showInFolder"
-                  title="Show file in folder">
-            <FontAwesome icon="folder" />
-          </button>
-
-          <input v-model="filename" @focus="$event.target.select()" class="input-dark" type="text" readonly>
-
-          <!-- <button @click="alignTop"
-                  title="Align image to the top of the screen (SHIFT + ↑)">
-            <FontAwesome icon="long-arrow-alt-up" />
-          </button>
-
-          <button @click="alignBottom"
-                  title="Align image to the bottom of the screen (SHIFT + ↓)">
-            <FontAwesome icon="long-arrow-alt-down" />
-          </button> -->
-
-          <button @click="rotateLeft"
-                  title="Rotate image to the left">
-            <FontAwesome icon="undo" />
-          </button>
-          
-          <button @click="rotateRight"
-                  title="Rotate image to the right">
-            <FontAwesome icon="undo" style="transform: scaleX(-1);" />
-          </button>
-
-          <button @click="$emit('next')" class="next"><FontAwesome icon="arrow-right" />
-        </button>
+          </div>
         </div>
       </div>
     </div>
@@ -69,12 +71,15 @@ import {
   VIDEO_EXTENSIONS_SET,
   CONTROL_FADE_DELAY,
 } from '@/constants'
+import { ImageViewProps } from '@/models/ImageViewProps'
 import { getExtension } from '@/models/fileUtils'
 import { Keyboard, Keys } from '@/models/Keyboard'
 
 @Component
 export default class ImageView extends Vue {
   @Prop() private keyboard!: Keyboard
+  @Prop() private index!: number
+  @Prop() private imageViews!: ImageViewProps[]
   @Prop() private src!: string
   @Prop() private width?: number | null
   @Prop() private scale?: number | null
@@ -108,7 +113,11 @@ export default class ImageView extends Vue {
   //
   get style () {
     if (this.width !== undefined && this.width !== null && !isNaN(this.width)) {
-      return `width: ${this.width}px;`
+      let left = 0
+      for (let i = 0; i < this.index; i++) {
+        left += this.imageViews[i].width
+      }
+      return `width: ${this.width}px; left: ${left}px;`
     }
     return ''
   }
@@ -469,99 +478,95 @@ export default class ImageView extends Vue {
 @import '../../scss/_shared';
 
 .image-view {
-  @extend .pnl;
+  position: absolute;
+  left: 0;
   height: 100%;
+  display: inline-block;
   overflow: hidden;
   user-select: none;
-  width: 50%;
-
-  input[type=checkbox].is-img-checked {
-    left: calc(50% - 6.5px);
-    position: absolute;
-    top: $pad-sm-top;
-    z-index: 2;
-  }
-
-  &:last-child {
-    width: 50%;
-  }
-
-  img, video {
+  
+  .image-view-inner {
+    @extend .pnl;
     height: 100%;
-    left: auto;
-    position: absolute;
-    top: 0;
-    transform: scale(1);
-    transform-origin: top left;
-    user-select: none;
-  }
-
-  .image-controls-wrap {
-    border-radius: $border-radius-md;
-    bottom: $pad-sm-bottom + 1px;
-    box-sizing: border-box;
-    left: 0;
-    padding: $pad-sm;
-    position: absolute;
     width: 100%;
-    z-index: 2;
 
-    .image-controls {
+    img, video {
+      height: 100%;
+      left: auto;
+      position: absolute;
+      top: 0;
+      transform: scale(1);
+      transform-origin: top left;
+      user-select: none;
+    }
+
+    .image-controls-wrap {
       border-radius: $border-radius-md;
-      color: #fff;
-      position: relative;
+      bottom: $pad-sm-bottom + 1px;
+      box-sizing: border-box;
+      left: 0;
+      padding: $pad-sm;
+      position: absolute;
       width: 100%;
+      z-index: 2;
 
-      .image-controls-inner {
-        margin: 0 auto;
-        overflow-x: visible;
+      .image-controls {
+        border-radius: $border-radius-md;
+        color: #fff;
         position: relative;
-        white-space: nowrap;
-        width: 294px;
+        width: 100%;
 
-        input[type=text] {
-          width: 110px;
-        }
+        .image-controls-inner {
+          margin: 0 auto;
+          overflow-x: visible;
+          position: relative;
+          white-space: nowrap;
+          width: 294px;
 
-        &.narrow {
-          width: 174px;
-          
           input[type=text] {
-            display: none;
-          }
-        }
-
-        button {
-          height: 100%;
-          min-width: 23px;
-
-          &.previous {
-            margin-right: 18px;
+            width: 110px;
           }
 
-          &.next {
-            margin-left: 18px;
+          &.narrow {
+            width: 174px;
+            
+            input[type=text] {
+              display: none;
+            }
+          }
+
+          button {
+            height: 100%;
+            min-width: 23px;
+
+            &.previous {
+              margin-right: 18px;
+            }
+
+            &.next {
+              margin-left: 18px;
+            }
           }
         }
       }
     }
-  }
 
-  .video-progress {
-    bottom: 0;
-    height: 3px;
-    left: 0;
-    position: absolute;
-    width: 100%;
-    z-index: 3;
-
-    .video-progress-complete {
-      background-color: $theme-blue;
+    .video-progress {
       bottom: 0;
-      display: block;
       height: 3px;
       left: 0;
       position: absolute;
+      width: 100%;
+      z-index: 3;
+
+      .video-progress-complete {
+        background-color: $theme-blue;
+        bottom: 0;
+        display: block;
+        height: 3px;
+        left: 0;
+        position: absolute;
+      }
     }
   }
 }

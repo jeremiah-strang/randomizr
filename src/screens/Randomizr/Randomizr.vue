@@ -1,9 +1,15 @@
 <template>
   <div class="randomizr">
+    <Resizer v-for="index in numImageViews - 1"
+             v-on:swap="() => swap(index - 1, index)"
+             :index="index - 1"
+             :image-views="imageViews"
+             :key="'resizer' + index" />
+
     <SettingsModal v-if="isSettingsModalOpen"
-                        :settings="userSettings"
-                        v-on:close="isSettingsModalOpen = false"
-                        v-on:update="onUserSettingsUpdate" />
+                   v-on:close="isSettingsModalOpen = false"
+                   v-on:update="onUserSettingsUpdate"
+                   :settings="userSettings" />
 
     <TagManager v-if="isTagManagerOpen"
                      v-on:close="isTagManagerOpen = false"
@@ -61,6 +67,8 @@
     </div>
 
     <ImageView v-for="(item, index) in imageViews"
+               :index="index"
+               :imageViews="imageViews"
                :key="index"
                :src="item.file"
                :width="item.width"
@@ -76,12 +84,6 @@
                v-on:left="(left) => imageViews[index].left = left"
                v-on:top="(top) => imageViews[index].top = top"
                v-on:delete="(src) => onDeleteFile(index, src)" />
-
-    <Resizer v-for="index in numImageViews - 1"
-             v-on:swap="() => swap(index - 1, index)"
-             :index="index - 1"
-             :image-views="imageViews"
-             :key="'resizer' + index" />
   </div>
 </template>
 
@@ -386,6 +388,7 @@ export default class Randomizr extends Vue {
       }
     }
     this.lastSavedStateIdLoaded = state._id || ''
+    this.$nextTick(this.updateWidth)
   }
 
   //
@@ -447,9 +450,9 @@ export default class Randomizr extends Vue {
 
 .randomizr {
   @extend .pnl;
-  @extend .hw100;
-  display: flex;
-  flex-direction: 'row';
+  @extend .h100;
+  display: block;
+  overflow: hidden;
 
   .top-right-controls {
     position: absolute;
