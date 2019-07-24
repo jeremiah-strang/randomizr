@@ -12,14 +12,14 @@
                    :settings="userSettings" />
 
     <TagManager v-if="isTagManagerOpen"
-                     v-on:close="isTagManagerOpen = false"
-                     v-on:update="onUserSettingsUpdate"
-                     :settings="userSettings" />
+                v-on:close="isTagManagerOpen = false"
+                v-on:update="onUserSettingsUpdate"
+                :settings="userSettings" />
 
     <StateManager v-if="isStateManagerOpen"
-                       v-on:close="isStateManagerOpen = false"
-                       v-on:load="(state) => loadSavedState(state)"
-                       :settings="userSettings" />
+                  v-on:close="isStateManagerOpen = false"
+                  v-on:load="(state) => loadSavedState(state)"
+                  :settings="userSettings" />
 
     <div ref="topRightControls" class="top-right-controls">
       <button @click="toggleFullscreen"
@@ -147,8 +147,8 @@ export default class Randomizr extends Vue {
   private viewportWidth: number = 1000
   private userSettings: UserSettings = defaultUserSettings()
   private numImageViews: number = 3
-
-  private lastSavedStateIdLoaded: string = ''
+  
+  private statesSeen: Set<string> = new Set()
 
   get fullScreenIcon () {
     return this.isFullScreen ? 'compress' : 'expand'
@@ -350,14 +350,22 @@ export default class Randomizr extends Vue {
       })
     }
     await createRandomizrState(state)
-    this.lastSavedStateIdLoaded = _id
   }
 
   //
   private async loadRandomSavedState () {
     const states = await getRandomizrStates()
-    if (states.length > 0) {
-      this.loadSavedState(states[Math.floor(Math.random() * states.length)])
+    let unseenStates = states.filter(state => !this.statesSeen.has(state._id))
+
+    // if no more seen states, start over
+    if (unseenStates.length === 0) {
+      unseenStates = states
+      this.statesSeen = new Set()
+    }
+
+    if (unseenStates.length > 0) {
+      const state = unseenStates[Math.floor(Math.random() * unseenStates.length)]
+      this.loadSavedState(state)
     }
   }
 
@@ -386,8 +394,8 @@ export default class Randomizr extends Vue {
         }
         i++
       }
+      this.statesSeen.add(state._id)
     }
-    this.lastSavedStateIdLoaded = state._id || ''
     this.$nextTick(this.updateWidth)
   }
 
