@@ -1,12 +1,15 @@
 <template>
   <div :style="style" ref="imgView" class="image-view">
     <img v-if="isImg" :src="src" ref="img" />
+    
     <video v-else-if="isVideo" ref="video">
       <source :src="src">
     </video>
+
     <div v-if="isVideo" class="video-progress">
       <div class="video-progress-complete" :style="`width: ${percentComplete}%`"></div>
     </div>
+
     <div ref="imgControls" :style="imageControlsStyle" class="image-controls-wrap">
       <div class="image-controls">
         <div :class="`image-controls-inner ${isNarrow ? 'narrow': ''}`">
@@ -27,7 +30,7 @@
 
           <input v-model="filename" @focus="$event.target.select()" class="input-dark" type="text" readonly>
 
-          <button @click="alignTop"
+          <!-- <button @click="alignTop"
                   title="Align image to the top of the screen (SHIFT + ↑)">
             <FontAwesome icon="long-arrow-alt-up" />
           </button>
@@ -35,7 +38,7 @@
           <button @click="alignBottom"
                   title="Align image to the bottom of the screen (SHIFT + ↓)">
             <FontAwesome icon="long-arrow-alt-down" />
-          </button>
+          </button> -->
 
           <button @click="rotateLeft"
                   title="Rotate image to the left">
@@ -73,7 +76,6 @@ import { Keyboard, Keys } from '@/models/Keyboard'
 export default class ImageView extends Vue {
   @Prop() private keyboard!: Keyboard
   @Prop() private src!: string
-  // @Prop() private isChecked!: boolean
   @Prop() private width?: number | null
   @Prop() private scale?: number | null
   @Prop() private rotate?: number | null
@@ -113,7 +115,7 @@ export default class ImageView extends Vue {
 
   //
   get isNarrow () {
-    return (this as any).width < 353
+    return (this as any).width < 303
   }
 
   //
@@ -515,14 +517,14 @@ export default class ImageView extends Vue {
         overflow-x: visible;
         position: relative;
         white-space: nowrap;
-        width: 346px;
+        width: 294px;
 
         input[type=text] {
           width: 110px;
         }
 
         &.narrow {
-          width: 234px;
+          width: 174px;
           
           input[type=text] {
             display: none;
