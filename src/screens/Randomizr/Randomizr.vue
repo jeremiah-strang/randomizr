@@ -265,7 +265,7 @@ export default class Randomizr extends Vue {
       rotate: 0,
       top: 0,
       file,
-      width: width || document.body.clientWidth / this.userSettings.numImageViews,
+      width: width || document.body.clientWidth / this.numImageViews,
     }
   }
   

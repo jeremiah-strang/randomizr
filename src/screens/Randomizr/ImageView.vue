@@ -97,6 +97,7 @@ export default class ImageView extends Vue {
       this.initImageDragAndScroll()
       if (this.isVideo && this.$refs.video) {
         const video = this.$refs.video as any
+        video.src = this.src
         video.volume = 0
         video.play()
         
@@ -318,7 +319,7 @@ export default class ImageView extends Vue {
       img.style.left = `${left}px`
       img.style.top = `${top}px`
 
-      if (!left) {
+      if (!left && this.isImg) {
         setTimeout(() => {
           if (img.clientWidth > this.width) {
             img.style.left = `${(this.width - img.clientWidth) / 2}px`
