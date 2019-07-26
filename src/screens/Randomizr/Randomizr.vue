@@ -175,14 +175,14 @@ export default class Randomizr extends Vue {
   }
 
   //
-  private onNext (index) {
+  private onNext (index: number, resetWidths?: boolean) {
     if (!isNaN(index) && index < this.imageViews.length) {
       const imageProps = this.imageViews[index]
       if (imageProps) {
         if (imageProps.next) {
           this.imageViews.splice(index, 1, imageProps.next as any)
         } else {
-          const next = this.randomizeImageProps(imageProps.width)
+          const next = this.randomizeImageProps(resetWidths ? this.viewportWidth / this.numImageViews : imageProps.width)
           imageProps.next = next
           next.previous = imageProps
           this.imageViews.splice(index, 1, next as any)
@@ -194,7 +194,7 @@ export default class Randomizr extends Vue {
   //
   private onNextAll () {
     for (let i = 0; i < this.imageViews.length; i++) {
-      this.onNext(i)
+      this.onNext(i, true)
     }
   }
 
