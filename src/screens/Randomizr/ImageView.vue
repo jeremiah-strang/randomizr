@@ -60,7 +60,7 @@
           <button @click="zoomIn" class="zoom-in">
             <FontAwesome icon="search-plus"/>
           </button>
-          <div class="zoom-label">{{ Math.round(scale * 100) }}%</div>
+          <div :title="'Zoomed ' + Math.round(scale * 100) + '%'" class="zoom-label">{{ Math.round(scale * 100) }}</div>
           <button @click="zoomOut" class="zoom-out">
             <FontAwesome icon="search-minus"/>
           </button>
@@ -545,10 +545,10 @@ export default class ImageView extends Vue {
         padding: 0;
         position: absolute;
         right: $pad-sm-right;
-        width: 26px;
+        width: 23.5px;
 
         .zoom-label {
-          font-size: 10px;
+          font-size: 11px;
           padding: $pad-xs-top 0;
           text-align: center;
         }
