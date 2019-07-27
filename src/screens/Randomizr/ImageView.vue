@@ -52,8 +52,18 @@
             </button>
 
             <button @click="$emit('next')" class="next"><FontAwesome icon="arrow-right" />
-          </button>
+            </button>
           </div>
+        </div>
+
+        <div class="zoom-wrap">
+          <button @click="zoomIn" class="zoom-in">
+            <FontAwesome icon="search-plus"/>
+          </button>
+          <div class="zoom-label">{{ Math.round(scale * 100) }}%</div>
+          <button @click="zoomOut" class="zoom-out">
+            <FontAwesome icon="search-minus"/>
+          </button>
         </div>
       </div>
     </div>
@@ -303,6 +313,55 @@ export default class ImageView extends Vue {
   }
 
   //
+  private zoom (delta) {
+    const $wrap = $(this.$refs.imgView)
+    let img: any = null
+    if (this.isImg) img = this.$refs.img
+    else if (this.isVideo) img = this.$refs.video
+
+    if (img && $wrap.is(':hover')) {
+      const transform = img.style.transform
+      let scale = 1
+      let rotate = 0
+      if (transform && transform.includes('scale(')) {
+        scale = parseFloat(transform.slice(transform.indexOf('scale(') + 6, transform.length))
+      }
+
+      if (transform && transform.includes('rotate(')) {
+        rotate = parseFloat(transform.slice(transform.indexOf('rotate(') + 7, transform.length))
+      }
+      
+      if (isNaN(scale)) scale = 1
+
+      if (delta < 0) {
+        scale += 0.05
+      } else if (delta > 0) {
+        scale -= 0.05
+      }
+
+      let transformStr = `scale(${scale})`
+      if (rotate !== 0) {
+        transformStr += ` rotate(${rotate}deg)`
+      }
+
+      img.style.transform = transformStr
+
+      this.$emit('scale', scale)
+      this.$emit('rotate', rotate)
+    }
+  }
+
+  //
+  private zoomIn () {
+    this.zoom(-1)
+  }
+
+  //
+  private zoomOut () {
+    this.zoom(1)
+  }
+
+  //
   private initImageDragAndScroll () {
     const imgView: any = this.$refs.imgView as any
     let img: any = null
@@ -397,42 +456,7 @@ export default class ImageView extends Vue {
   mounted () {
     const $wrap = $(this.$refs.imgView)
 
-    window.addEventListener('wheel', (e) => {
-      let img: any = null
-      if (this.isImg) img = this.$refs.img
-      else if (this.isVideo) img = this.$refs.video
-
-      if (img && $wrap.is(':hover')) {
-        const transform = img.style.transform
-        let scale = 1
-        let rotate = 0
-        if (transform && transform.includes('scale(')) {
-          scale = parseFloat(transform.slice(transform.indexOf('scale(') + 6, transform.length))
-        }
-
-        if (transform && transform.includes('rotate(')) {
-          rotate = parseFloat(transform.slice(transform.indexOf('rotate(') + 7, transform.length))
-        }
-        
-        if (isNaN(scale)) scale = 1
-
-        if (e.deltaY < 0) {
-          scale += 0.05
-        } else if (e.deltaY > 0) {
-          scale -= 0.05
-        }
-
-        let transformStr = `scale(${scale})`
-        if (rotate !== 0) {
-          transformStr += ` rotate(${rotate}deg)`
-        }
-
-        img.style.transform = transformStr
-
-        this.$emit('scale', scale)
-        this.$emit('rotate', rotate)
-      }
-    })
+    window.addEventListener('wheel', (e) => this.zoom(e.deltaY))
 
     window.addEventListener('keyup', (e?: any) => {
       if ($wrap.is(':hover')) {
@@ -510,6 +534,42 @@ export default class ImageView extends Vue {
       position: absolute;
       width: 100%;
       z-index: 2;
+
+      .zoom-wrap {
+        background-color: $dark2;
+        border-radius: $border-radius-md;
+        border: 1px solid $dark6;
+        bottom: $pad-sm-bottom;
+        box-sizing: border-box;
+        color: $gray7;
+        padding: 0;
+        position: absolute;
+        right: $pad-sm-right;
+        width: 26px;
+
+        .zoom-label {
+          font-size: 10px;
+          padding: $pad-xs-top 0;
+          text-align: center;
+        }
+
+        button.zoom-in,
+        button.zoom-out {
+          border: none;
+          margin: 0;
+          width: 100%;
+        }
+
+        button.zoom-in {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+
+        button.zoom-out {
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        }
+      }
 
       .image-controls {
         border-radius: $border-radius-md;
