@@ -135,7 +135,7 @@ export default class ImageView extends Vue {
 
   //
   get isNarrow () {
-    return (this as any).width < 303
+    return (this as any).width < 352
   }
 
   //
