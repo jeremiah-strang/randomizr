@@ -24,11 +24,6 @@
               <FontAwesome icon="trash" />
             </button>
 
-            <button @click="showInFolder"
-                    title="Show file in folder">
-              <FontAwesome icon="folder" />
-            </button>
-
             <input v-model="filename" @focus="$event.target.select()" class="input-dark" type="text" readonly>
 
             <!-- <button @click="alignTop"
@@ -39,11 +34,21 @@
             <button @click="alignBottom"
                     title="Align image to the bottom of the screen (SHIFT + ↓)">
               <FontAwesome icon="long-arrow-alt-down" />
-            </button> -->
+            </button>
 
             <button @click="rotateLeft"
                     title="Rotate image to the left">
               <FontAwesome icon="undo" />
+            </button> -->
+
+            <button @click="showInFolder"
+                    title="Show file in folder">
+              <FontAwesome icon="folder-open" />
+            </button>
+
+            <button @click="selectFile"
+                    title="Select a file">
+              <FontAwesome icon="folder-plus" />
             </button>
             
             <button @click="rotateRight"
@@ -74,7 +79,7 @@
 import fs from 'fs'
 import path from 'path'
 import $ from 'jquery'
-import { shell } from 'electron'
+import { shell, remote } from 'electron'
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 import {
   IMAGE_EXTENSIONS_SET,
@@ -84,6 +89,8 @@ import {
 import { ImageViewProps } from '@/models/ImageViewProps'
 import { getExtension } from '@/models/fileUtils'
 import { Keyboard, Keys } from '@/models/Keyboard'
+
+const { dialog } = remote
 
 @Component
 export default class ImageView extends Vue {
@@ -179,6 +186,27 @@ export default class ImageView extends Vue {
     if (this.src) {
       this.$emit('delete', this.src)
     }
+  }
+
+  //
+  private selectFile () {
+    const files = dialog.showOpenDialog({
+      properties: ['openFile'],
+      message: 'Select an image',
+      defaultPath: path.dirname(this.src),
+      filters: [
+        {
+          name: 'Image',
+          extensions: [
+            ...Array.from(IMAGE_EXTENSIONS_SET),
+            ...Array.from(VIDEO_EXTENSIONS_SET)
+          ].map(ext => ext.slice(1, ext.length)),
+        },
+      ]
+    })
+
+    console.log(files)
+    if (files && files.length > 0) this.$emit('src', files[0])
   }
 
   //

@@ -83,6 +83,7 @@
                v-on:rotate="(rotate) => imageViews[index].rotate = rotate"
                v-on:left="(left) => imageViews[index].left = left"
                v-on:top="(top) => imageViews[index].top = top"
+               v-on:src="(file) => imageViews[index].file = file"
                v-on:delete="(src) => onDeleteFile(index, src)" />
   </div>
 </template>
@@ -199,7 +200,7 @@ export default class Randomizr extends Vue {
   }
 
   //
-  private swap (indexA, indexB) {
+  private swap (indexA: number, indexB: number) {
     if (indexA >= 0 &&
         indexB >= 0 &&
         indexA !== indexB &&
