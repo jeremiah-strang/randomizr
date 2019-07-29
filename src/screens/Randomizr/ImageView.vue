@@ -226,6 +226,8 @@ export default class ImageView extends Vue {
       }
 
       img.style.transform = transformStr
+      if (rotate % 360 !== 0) img.style.transformOrigin = 'center'
+      else img.style.transformOrigin = 'top left'
       this.$emit('rotate', rotate)
     }
   }
@@ -247,6 +249,8 @@ export default class ImageView extends Vue {
       }
 
       img.style.transform = transformStr
+      if (rotate % 360 !== 0) img.style.transformOrigin = 'center'
+      else img.style.transformOrigin = 'top left'
       this.$emit('rotate', rotate)
     }
   }
@@ -405,6 +409,9 @@ export default class ImageView extends Vue {
       img.style.transform = `scale(${scale}) rotate(${rotate}deg)`
       img.style.left = `${left}px`
       img.style.top = `${top}px`
+      
+      if (rotate % 360 !== 0) img.style.transformOrigin = 'center'
+      else img.style.transformOrigin = 'top left'
 
       if (!left && this.isImg) {
         setTimeout(() => {
