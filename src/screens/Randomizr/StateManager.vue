@@ -30,7 +30,7 @@
                     title="Upload saved states">
               <FontAwesome icon="upload" />
             </button>
-            
+
             <button @click="downloadSavedStates"
                     title="Download saved states">
               <FontAwesome icon="download" />
@@ -38,7 +38,7 @@
           </div>
 
         </div>
-        <div class="pnl w100 h350px o-auto">
+        <div :style="tableWrapStyle" class="pnl w100 o-auto">
           <table>
             <thead>
               <tr>
@@ -133,6 +133,10 @@ export default class StateManager extends Vue {
 
   get modalHeight () {
     return Math.max(document.body.clientHeight - 200, 500)
+  }
+
+  get tableWrapStyle () {
+    return `height: ${this.modalHeight - 200}px`
   }
   
   //
