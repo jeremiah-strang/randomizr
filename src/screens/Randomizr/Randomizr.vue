@@ -23,14 +23,18 @@
 
     <div ref="topRightControls" class="top-right-controls">
       <button @click="toggleFullscreen"
-              title="Toggle full screen"
-              class="fullscreen-btn">
+              title="Toggle full screen">
         <FontAwesome :icon="fullScreenIcon" />
       </button>
       
       <button @click="onNextAll"
               title="Randomize all images (CTRL + R)">
         <FontAwesome icon="sync-alt" />
+      </button>
+
+      <button @click="onAddView"
+              title="Add another image view">
+        <FontAwesome icon="plus" />
       </button>
 
       <button @click.stop="isSettingsMenuToggled = !isSettingsMenuToggled"
@@ -84,7 +88,8 @@
                v-on:left="(left) => imageViews[index].left = left"
                v-on:top="(top) => imageViews[index].top = top"
                v-on:src="(file) => imageViews[index].file = file"
-               v-on:delete="(src) => onDeleteFile(index, src)" />
+               v-on:delete="(src) => onDeleteFile(index, src)"
+               v-on:remove="(index) => onRemoveView(index)" />
   </div>
 </template>
 
@@ -200,6 +205,27 @@ export default class Randomizr extends Vue {
   }
 
   //
+  private onAddView () {
+    this.numImageViews++
+    this.imageViews.push(this.randomizeImageProps(this.viewportWidth / this.imageViews.length))
+    let totalW = 0
+
+    for (let imageView of this.imageViews) {
+      totalW += imageView.width
+    }
+
+    for (let imageView of this.imageViews) {
+      imageView.width = (imageView.width / totalW) * this.viewportWidth
+    }
+  }
+
+  //
+  private onRemoveView (index: number) {
+    this.numImageViews--
+    this.imageViews.splice(index, 1)
+  }
+
+  //
   private swap (indexA: number, indexB: number) {
     if (indexA >= 0 &&
         indexB >= 0 &&
@@ -249,7 +275,9 @@ export default class Randomizr extends Vue {
             if (next) this.imageViews.splice(index, 1, next)
             else this.imageViews.splice(index, 1, this.randomizeImageProps(current.width))
           }
-        } catch (error) {}
+        } catch (error) {
+          console.error(error)
+        }
       }
     }
   }

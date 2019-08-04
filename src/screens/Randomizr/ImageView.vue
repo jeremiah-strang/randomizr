@@ -56,6 +56,11 @@
               <FontAwesome icon="undo" style="transform: scaleX(-1);" />
             </button>
 
+            <button @click="closeView"
+                    title="Remove this image view">
+              <FontAwesome icon="minus" />
+            </button>
+
             <button @click="$emit('next')" class="next"><FontAwesome icon="arrow-right" />
             </button>
           </div>
@@ -142,7 +147,7 @@ export default class ImageView extends Vue {
 
   //
   get isNarrow () {
-    return (this as any).width < 352
+    return (this as any).width < 376
   }
 
   //
@@ -185,6 +190,13 @@ export default class ImageView extends Vue {
   private deleteFile () {
     if (this.src) {
       this.$emit('delete', this.src)
+    }
+  }
+
+  //
+  private closeView () {
+    if (this.src) {
+      this.$emit('remove', this.index)
     }
   }
 
@@ -617,14 +629,14 @@ export default class ImageView extends Vue {
           overflow-x: visible;
           position: relative;
           white-space: nowrap;
-          width: 294px;
+          width: 320px;
 
           input[type=text] {
             width: 110px;
           }
 
           &.narrow {
-            width: 174px;
+            width: 226px;
             
             input[type=text] {
               display: none;
