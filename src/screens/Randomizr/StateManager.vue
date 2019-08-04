@@ -210,9 +210,11 @@ export default class StateManager extends Vue {
       this.isBusy = true
       try {
         const states = await fse.readJson(files[0])
+
         if (Array.isArray(states)) {
           const promises = []
           for (let state of states) {
+            state.created = state.created ? new Date(state.created) : new Date()
             promises.push(createRandomizrState(state).catch(() => {}))
           }
           await Promise.all(promises)
