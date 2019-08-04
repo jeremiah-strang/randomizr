@@ -205,9 +205,7 @@ export default class Randomizr extends Vue {
   }
 
   //
-  private onAddView () {
-    this.numImageViews++
-    this.imageViews.push(this.randomizeImageProps(this.viewportWidth / this.imageViews.length))
+  private fitViews () {
     let totalW = 0
 
     for (let imageView of this.imageViews) {
@@ -220,9 +218,16 @@ export default class Randomizr extends Vue {
   }
 
   //
+  private onAddView () {
+    this.numImageViews++
+    this.imageViews.push(this.randomizeImageProps(this.viewportWidth / this.imageViews.length))
+  }
+
+  //
   private onRemoveView (index: number) {
     this.numImageViews--
     this.imageViews.splice(index, 1)
+    this.fitViews()
   }
 
   //
