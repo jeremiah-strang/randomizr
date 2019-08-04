@@ -307,12 +307,10 @@ export default class StateManager extends Vue {
       switch (e.which) {
         case Keys.arrowUp:
           this.selectedIndex = Math.max(this.selectedIndex - 1, -1)
-          console.log(this.selectedIndex)
           e.preventDefault()
           break
         case Keys.arrowDown:
           this.selectedIndex = Math.min(this.selectedIndex + 1, this.states.length -1)
-          console.log(this.selectedIndex)
           e.preventDefault()
           break
       }
