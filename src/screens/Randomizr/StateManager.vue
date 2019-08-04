@@ -51,10 +51,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr @click="() => selectState(item, index)"
-                v-for="(item, index) in states"
-                :key="item._id"
-                :class="selectedState && selectedState._id === item._id ? 'selected' : ''">
+              <tr v-for="(item, index) in states"
+                  @click="() => selectState(index)"
+                  :key="item._id"
+                  :class="selectedState && selectedState._id === item._id ? 'selected' : ''">
                 <td class="actions">
                   <button @click.stop="() => $emit('load', item)"
                           class="btn-light">
@@ -95,11 +95,12 @@
 </template>
 
 <script lang="ts">
-import path from 'path'
+import fse from 'fs-extra'
 import moment from 'moment'
+import path from 'path'
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { shell, remote } from 'electron'
-import fse from 'fs-extra'
+import { Keyboard, Keys } from '@/models/Keyboard'
 
 const { dialog } = remote
 
@@ -119,6 +120,7 @@ import {
   removeRandomizrState,
   updateRandomizrState,
 } from '@/models/RandomizrState'
+import Randomizr from './Randomizr.vue';
 
 @Component
 export default class StateManager extends Vue {
@@ -129,19 +131,21 @@ export default class StateManager extends Vue {
   private newTag: string = ''
   private maxNumImageViews: number = 3
   private selectedIndex: number = -1
-  private selectedState: RandomizrState | null = null
 
-  get modalHeight () {
+  get modalHeight (): number {
     return Math.max(document.body.clientHeight - 200, 500)
   }
 
-  get tableWrapStyle () {
-    return `height: ${this.modalHeight - 200}px`
+  get tableWrapStyle (): string {
+    return `height: ${this.modalHeight - 190}px`
+  }
+
+  get selectedState (): RandomizrState | null {
+    return this.selectedIndex > -1 && this.states.length > this.selectedIndex ? this.states[this.selectedIndex] : null
   }
   
   //
-  private selectState (state: RandomizrState, index: number) {
-    this.selectedState = state
+  private selectState (index: number) {
     this.selectedIndex = index
   }
   
@@ -288,6 +292,31 @@ export default class StateManager extends Vue {
   //
   mounted () {
     this.loadStates()
+    window.addEventListener('keydown', (e?: any) => {
+      e = e || window.event
+      switch (e.which) {
+        case Keys.arrowUp:
+        case Keys.arrowDown:
+          e.preventDefault()
+          break
+      }
+    })
+
+    window.addEventListener('keyup', (e?: any) => {
+      e = e || window.event
+      switch (e.which) {
+        case Keys.arrowUp:
+          this.selectedIndex = Math.max(this.selectedIndex - 1, -1)
+          console.log(this.selectedIndex)
+          e.preventDefault()
+          break
+        case Keys.arrowDown:
+          this.selectedIndex = Math.min(this.selectedIndex + 1, this.states.length -1)
+          console.log(this.selectedIndex)
+          e.preventDefault()
+          break
+      }
+    })
   }
 }
 </script>
