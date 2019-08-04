@@ -137,7 +137,7 @@ export default class StateManager extends Vue {
   }
 
   get tableWrapStyle (): string {
-    return `height: ${this.modalHeight - 190}px`
+    return `height: ${this.modalHeight - 240}px`
   }
 
   get selectedState (): RandomizrState | null {
@@ -329,7 +329,7 @@ export default class StateManager extends Vue {
   .preview-wrap {
     position: relative;
     display: block;
-    height: 170px;
+    height: 220px;
     width: 100%;
     margin-bottom: $pad-md-bottom;
 
@@ -338,7 +338,7 @@ export default class StateManager extends Vue {
       
       .preview-img {
         position: relative;
-        height: 170px;
+        height: 220px;
         display: inline-block;
 
         img, video {
