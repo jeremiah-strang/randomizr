@@ -375,6 +375,7 @@ export default class Randomizr extends Vue {
           rotate: !isNaN(imageView.rotate) ? imageView.rotate : 0,
           left: !isNaN(imageView.left) ? imageView.left : 0,
           top: !isNaN(imageView.top) ? imageView.top : 0,
+          created: new Date(),
         }
       })
     }
@@ -492,9 +493,7 @@ export default class Randomizr extends Vue {
   overflow: hidden;
 
   .top-right-controls {
-    position: absolute;
-    right: $pad-sm-right;
-    top: $pad-sm-top;
+    @extend .pin-top-right;
     z-index: 2;
   }
 }

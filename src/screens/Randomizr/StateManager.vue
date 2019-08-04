@@ -1,12 +1,12 @@
 <template>
   <div class="modal-wrap" ref="modal">
-    <Modal title="Saved State Manager"
-           size="md"
-           height="520"
-           title-icon-class="bookmark"
-           scrollable="true"
+    <Modal :height="modalHeight"
            :is-busy="isBusy"
-           @close="() => $emit('close')">
+           @close="() => $emit('close')"
+           title="Saved State Manager"
+           width="970"
+           title-icon-class="bookmark"
+           scrollable="true">
       <div slot="modal-body" class="state-manager">
         <div class="preview-wrap">
           <div v-if="selectedState" class="preview-img-wrap">
@@ -24,6 +24,19 @@
             </div>
           </div>
           <h4 v-else class="text-center">No state selected</h4>
+
+          <div class="pin-top-right">
+            <button @click="uploadSavedStates"
+                    title="Upload saved states">
+              <FontAwesome icon="upload" />
+            </button>
+            
+            <button @click="downloadSavedStates"
+                    title="Download saved states">
+              <FontAwesome icon="download" />
+            </button>
+          </div>
+
         </div>
         <div class="pnl w100 h350px o-auto">
           <table>
@@ -31,14 +44,15 @@
               <tr>
                 <th class="actions">&nbsp;</th>
                 <th class="state-id">ID</th>
+                <th class="state-created">Created</th>
                 <!-- <th class="state-name">Name</th> -->
                 <th class="state-file" v-for="index in maxNumImageViews" :key="index">File {{ index }}</th>
                 <!-- <th class="scrollbar">&nbsp;</th> -->
               </tr>
             </thead>
             <tbody>
-              <tr @click="() => selectState(item)"
-                v-for="item in states"
+              <tr @click="() => selectState(item, index)"
+                v-for="(item, index) in states"
                 :key="item._id"
                 :class="selectedState && selectedState._id === item._id ? 'selected' : ''">
                 <td class="actions">
@@ -52,12 +66,14 @@
                   </button>
                 </td>
 
-                <td class="state-id">
+                <td class="state-id" :title="item._id">
                   {{ item._id }}
                 </td>
-                <!-- <td class="state-name">
-                  <input v-model="item.name" type="text">
-                </td> -->
+
+                <td class="state-created">
+                  {{ item.createdStr }}
+                </td>
+                
                 <td class="state-file" v-for="(item, index) in item.imageViews" :key="index">
                   {{ item.file }}
                 </td>
@@ -79,8 +95,14 @@
 </template>
 
 <script lang="ts">
+import path from 'path'
+import moment from 'moment'
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { shell } from 'electron'
+import { shell, remote } from 'electron'
+import fse from 'fs-extra'
+
+const { dialog } = remote
+
 import { getExtension } from '@/models/fileUtils'
 import {
   IMAGE_EXTENSIONS_SET,
@@ -100,20 +122,99 @@ import {
 
 @Component
 export default class StateManager extends Vue {
+  @Prop() private settings!: UserSettings
   private isBusy: boolean = false
   private isEdited: boolean = false
   private states: RandomizrState[] = []
   private newTag: string = ''
   private maxNumImageViews: number = 3
+  private selectedIndex: number = -1
   private selectedState: RandomizrState | null = null
 
-  private selectState (state) {
-    this.selectedState = state
+  get modalHeight () {
+    return Math.max(document.body.clientHeight - 200, 500)
   }
-
+  
+  //
+  private selectState (state: RandomizrState, index: number) {
+    this.selectedState = state
+    this.selectedIndex = index
+  }
+  
+  //
   private async removeState (_id) {
     await removeRandomizrState(_id)
     this.loadStates()
+  }
+
+  //
+  private async downloadSavedStates () {
+    const prepped = this.states.map((state: RandomizrState) => {
+      const { _id, created, name, imageViews } = state
+
+      return {
+        _id,
+        created: created ? new Date(created) : new Date(),
+        name: name || '',
+        imageViews: Array.isArray(imageViews) ? [...imageViews] : [],
+      }
+    })
+
+    const settingsDirs = this.settings && this.settings.imageDirnames ? this.settings.imageDirnames : []
+    const defaultPath = settingsDirs.length > 0 && fse.existsSync(settingsDirs[0]) ? path.join(settingsDirs[0], 'randomizr-saved-states.json') : null
+
+    const savePath = dialog.showSaveDialog({
+      defaultPath,
+    })
+    if (savePath) {
+      if (!fse.existsSync(savePath) || confirm(`A file already exists at ${savePath}. Overwrite?`)) {
+        const data = JSON.stringify(prepped, null, '  ')
+        try {
+          await fse.writeFile(savePath, data)
+        } catch (error) {
+          console.error(error)
+          alert('Error saving file')
+        }
+      }
+    }
+  }
+
+  //
+  private async uploadSavedStates () {
+    const settingsDirs = this.settings && this.settings.imageDirnames ? this.settings.imageDirnames : []
+    const defaultPath = settingsDirs.length > 0 && fse.existsSync(settingsDirs[0]) ? settingsDirs[0] : null
+
+    const files = dialog.showOpenDialog({
+      properties: ['openFile'],
+      message: 'Select an file',
+      defaultPath,
+      filters: [
+        {
+          name: 'JSON',
+          extensions: [
+            'json',
+          ],
+        },
+      ]
+    })
+
+    if (files && files.length > 0) {
+      this.isBusy = true
+      try {
+        const states = await fse.readJson(files[0])
+        if (Array.isArray(states)) {
+          const promises = []
+          for (let state of states) {
+            promises.push(createRandomizrState(state).catch(() => {}))
+          }
+          await Promise.all(promises)
+        }
+      } catch (error) {
+        console.error(error)
+      }
+      await this.loadStates()
+      this.isBusy = false
+    }
   }
 
   //
@@ -126,21 +227,24 @@ export default class StateManager extends Vue {
   private getExtension = (file: string) => getExtension(file)
 
   //
-  async loadStates () {
+  private async loadStates () {
     this.isBusy = true
     try {
       let states = await getRandomizrStates()
       states = states
-        .sort((a, b) => a._id > b._id ? 1 : -1)
         .map(state => {
           this.maxNumImageViews = Math.max(this.maxNumImageViews, state.imageViews.length)
 
+          const created: Date = state.created ? new Date(state.created) : new Date()
           return {
             ...state,
             name: state.name || '',
             isEdited: false,
+            created,
+            createdStr: moment(created).format('M/D/YYYY h:mm:ss a'),
           }
         })
+        .sort((a, b) => a.created > b.created ? 1 : -1)
       this.states = states
     } catch (error) {
       console.error(error)
@@ -149,7 +253,7 @@ export default class StateManager extends Vue {
   }
 
   //
-  async onSave () {
+  private async onSave () {
     if (this.isEdited) {
       this.isBusy = true
       try {
@@ -192,7 +296,7 @@ export default class StateManager extends Vue {
   .preview-wrap {
     position: relative;
     display: block;
-    height: 150px;
+    height: 170px;
     width: 100%;
     margin-bottom: $pad-md-bottom;
 
@@ -201,7 +305,7 @@ export default class StateManager extends Vue {
       
       .preview-img {
         position: relative;
-        height: 150px;
+        height: 170px;
         display: inline-block;
 
         img, video {
@@ -222,8 +326,15 @@ export default class StateManager extends Vue {
   table {
     th, td {
       &.state-id {
-        max-width: 100px;
-        width: 100px;
+        max-width: 70px;
+        width: 70px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      &.state-created {
+        max-width: 144px;
+        width: 144px;
         white-space: nowrap;
         overflow: hidden;
       }
@@ -241,6 +352,12 @@ export default class StateManager extends Vue {
       }
     }
 
+    td {
+      &.state-id {
+        color: $gray9;
+      }
+    }
+
     tbody {
       width: 100%;
       display: block;
@@ -255,6 +372,10 @@ export default class StateManager extends Vue {
         &.selected {
           background-color: $theme-blue;
           color: #fff;
+
+          td.state-id {
+            color: lighten($theme-blue, 25%);
+          }
         }
       }
     }

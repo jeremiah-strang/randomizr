@@ -172,6 +172,11 @@
   color: $font-dark !important;
 }
 
+.pin-top-right {
+  position: absolute;
+  right: $pad-sm-right;
+  top: $pad-sm-top;
+}
 
 .max-h1150px,
 .max-h1100px,

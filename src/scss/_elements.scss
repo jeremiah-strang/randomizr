@@ -296,7 +296,9 @@ table.scrollable {
   }
 
   th, td {
+    font-size: $font-size - 1px;
     padding: $pad-sm;
+    
     input[type=checkbox] {
       width: 14px;
       height: 14px;

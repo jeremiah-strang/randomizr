@@ -10,6 +10,8 @@ export interface RandomizrState {
   _rev?: string
   name?: string
   imageViews?: ImageViewProps[]
+  created?: Date
+  createdStr?: string
 }
 
 //
