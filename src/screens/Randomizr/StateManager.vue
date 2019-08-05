@@ -254,7 +254,7 @@ export default class StateManager extends Vue {
             createdStr: moment(created).format('M/D/YYYY h:mm:ss a'),
           }
         })
-        .sort((a, b) => a.created > b.created ? 1 : -1)
+        .sort((a, b) => a.created > b.created ? -1 : 1)
       this.states = states
     } catch (error) {
       console.error(error)
