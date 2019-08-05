@@ -244,7 +244,6 @@ export default class StateManager extends Vue {
       states = states
         .map(state => {
           this.maxNumImageViews = Math.max(this.maxNumImageViews, state.imageViews.length)
-
           const created: Date = state.created ? new Date(state.created) : new Date()
           return {
             ...state,

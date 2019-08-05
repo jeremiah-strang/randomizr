@@ -33,25 +33,25 @@ export const getRandomizrState = async (_id: string): Promise<RandomizrState | n
 }
 
 //
-export const createRandomizrState = async (config: RandomizrState) => {
+export const createRandomizrState = async (state: RandomizrState) => {
   let existing: RandomizrState | null = null
-  if (!config._id) config._id = uuid()
+  if (!state._id) state._id = uuid()
   else {
-    existing = await getRandomizrState(config._id)
+    existing = await getRandomizrState(state._id)
   }
   if (existing) {
-    await updateRandomizrState(config)
+    await updateRandomizrState(state)
   } else {
-    await db.put(config)
+    await db.put(state)
   }
 }
 
 //
-export const updateRandomizrState = async (config: RandomizrState) => {
+export const updateRandomizrState = async (state: RandomizrState) => {
   try {
-    const existing = await db.get(config._id)
+    const existing = await db.get(state._id)
     await db.put({
-      ...config,
+      ...state,
       _rev: existing._rev,
     })
   } catch (error) {
