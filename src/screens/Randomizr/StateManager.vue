@@ -175,14 +175,12 @@ export default class StateManager extends Vue {
       defaultPath,
     })
     if (savePath) {
-      if (!fse.existsSync(savePath) || confirm(`A file already exists at ${savePath}. Overwrite?`)) {
-        const data = JSON.stringify(prepped, null, '  ')
-        try {
-          await fse.writeFile(savePath, data)
-        } catch (error) {
-          console.error(error)
-          alert('Error saving file')
-        }
+      const data = JSON.stringify(prepped, null, '  ')
+      try {
+        await fse.writeFile(savePath, data)
+      } catch (error) {
+        console.error(error)
+        alert('Error saving file')
       }
     }
   }
