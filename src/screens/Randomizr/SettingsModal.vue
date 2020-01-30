@@ -1,7 +1,7 @@
 <template>
   <div class="settings-modal modal-wrap" ref="modal">
     <Modal title="Image Settings"
-           size="xs"
+           size="sm"
            title-icon-class="cog"
            :is-busy="isBusy"
            @close="() => $emit('close')">
@@ -9,7 +9,8 @@
         <h4 v-show="errorMessage" class="red">{{ errorMessage }}</h4>
         <div class="form-row border-bottom">
           Image directories
-          <input v-model="imageDirnamesStr" v-on:change="dirnamesChanged" class="w100" type="text">
+          <input v-model="imageDirnamesStr" v-on:change="dirnamesChanged" class="w300px" type="text">
+          <button @click="browseForFolder" class="btn-primary w75px">Browse</button>
         </div>
         <div class="form-row">
           Number of image views
@@ -26,9 +27,11 @@
 </template>
 
 <script lang="ts">
+import { shell, remote } from 'electron'
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { defaultUserSettings, saveUserSettings, UserSettings } from '@/models/UserSettings'
 import { isDirectory } from '@/models/fileUtils'
+const { dialog } = remote
 
 @Component
 export default class SettingsModal extends Vue {
@@ -78,6 +81,16 @@ export default class SettingsModal extends Vue {
     updated.numImageViews = this.numImageViews
     updated = await saveUserSettings(updated)
     this.$emit('update', updated)
+  }
+
+  //
+  private browseForFolder () {
+    const files = dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      message: 'Select an directory',
+    })
+
+    if (files && files.length > 0) this.imageDirnamesStr = files[0]
   }
 }
 </script>
