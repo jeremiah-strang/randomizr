@@ -91,6 +91,7 @@ export default class SettingsModal extends Vue {
     })
 
     if (files && files.length > 0) this.imageDirnamesStr = files[0]
+    this.hasValidDirname = true
   }
 }
 </script>
